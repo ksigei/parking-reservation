@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Parking Spots - Parking Reservation{% endblock %}
+
+{% block content %}
+    <style>
+        /* Internal CSS styles */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #007bff;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start; /* Align slots from left to right */
+        }
+
+        li {
+            width: calc(25% - 10px); /* Set each slot to occupy 25% of the container width */
+            margin-right: 20px; /* Add spacing between slots */
+            margin-bottom: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .spot-info {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .reserve-link {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .reserve-link:hover {
+            text-decoration: underline;
+        }
+
+        .reserved {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+
+    <div class="container">
+        <h1>Parking Spots</h1>
+        <ul>
+            {% for spot in parking_spots %}
+                <li>
+                    <span class="spot-info">Parking Spot: {{ spot.spot_number }}</span>
+                    {% if not spot.is_reserved %}
+                        (<a href="{% url 'reserve_spot' spot.id %}" class="reserve-link">Reserve</a>)
+                    {% else %}
+                        <span class="reserved">(Reserved) until {{ spot.reservation.end_time|date:"DATETIME_FORMAT" }}</span>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}

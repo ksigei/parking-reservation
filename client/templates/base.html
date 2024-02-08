@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Parking Reservation{% endblock %}</title>
+    <!-- Add your CSS links or stylesheets here -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        /* Internal CSS styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        nav ul li {
+            display: inline;
+            margin-right: 20px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #333;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        footer {
+            background-color: #f8f9fa;
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <!-- Header content goes here -->
+        <h1>Parking Reservation System</h1>
+        <p>Welcome to our parking reservation system</p>
+    </header>
+    
+    <nav>
+        <!-- Navigation links go here -->
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="{% url 'list_parking_spots' %}">Parking Spots</a></li>
+            <!-- Add other navigation links as needed -->
+        </ul>
+    </nav>
+    
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+    
+    <footer>
+        <!-- Footer content goes here -->
+        <p>&copy; 2024 Parking Reservation System. All rights reserved.</p>
+    </footer>
+</body>
+</html>

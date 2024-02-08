@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Make Payment{% endblock %}
+
+{% block content %}
+    <style>
+        .payment-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .payment-title {
+            font-size: 24px;
+        }
+
+        .payment-form {
+            margin-top: 20px;
+        }
+
+        .payment-amount {
+            font-size: 18px;
+        }
+
+        .submit-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+
+    <div class="payment-container">
+        <h1 class="payment-title">Make Payment</h1>
+        <form method="post" class="payment-form">
+            {% csrf_token %}
+            <p class="payment-amount">Amount: ${{ amount }}</p>
+            <button type="submit" class="submit-button">Submit Payment</button>
+        </form>
+    </div>
+{% endblock %}
