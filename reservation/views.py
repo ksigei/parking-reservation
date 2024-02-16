@@ -1,34 +1,31 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Reservation
-from parking.models import ParkingSpot
-from datetime import datetime
 from django.urls import reverse
 from django.utils.timezone import now
-
-from django.http import HttpResponse
-from django.template.loader import render_to_string
+from django.http import HttpResponse, HttpResponseServerError
 from django.utils.text import slugify
-from django.conf import settings
-import os
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from .models import Reservation
+from parking.models import ParkingSpot
 
 @login_required
 def reserve_spot(request, spot_id):
     spot = ParkingSpot.objects.get(id=spot_id)
     if spot.is_reserved:
-        # Handle case where spot is already reserved
         pass
     else:
-        # Handle reservation logic
+        # cereate reservation 
         reservation = Reservation.objects.create(
             user=request.user,
             parking_spot=spot,
             start_time=now(),
-            end_time=now()  # Add logic for end time
+            end_time=now()  
         )
         spot.is_reserved = True
         spot.save()
-        # Redirect to payment page with the reservation ID
+        # redirect to payment page with the reservation ID
         return redirect(reverse('make_payment', args=[reservation.id]))
 
 def reservation_success(request):
@@ -36,27 +33,48 @@ def reservation_success(request):
     return render(request, 'reservation_success.html')
 
 
+@login_required
 def download_ticket(request, reservation_id):
-    reservation = Reservation.objects.get(id=reservation_id)
-    context = {'reservation': reservation}
+    reservation = get_object_or_404(Reservation, id=reservation_id)
 
-    # Render ticket template to string
-    ticket_html = render_to_string('ticket_template.html', context)
+    # create ticket in pdf format
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="ticket_{slugify(reservation.id)}.pdf"'
 
-    # Generate unique filename for the ticket
-    filename = f'ticket_{slugify(reservation.id)}.html'
+    try:
+        # pdf
+        doc = SimpleDocTemplate(response, pagesize=letter)
+        styles = getSampleStyleSheet()
+        
+        header_text = Paragraph("<b>Reservation Ticket</b>", styles['Heading1'])
+        contacts_text = Paragraph("<b>Contact Information:</b><br/>Email: admin@reservaton.com<br/>Phone: +1234567890", styles['Normal'])
 
-    # Save ticket HTML to temporary directory
-    ticket_path = os.path.join(settings.BASE_DIR, 'tmp', filename)
-    with open(ticket_path, 'w') as ticket_file:
-        ticket_file.write(ticket_html)
+        footer_text = Paragraph("Thank you for your reservation", styles['Normal'])
 
-    # Read ticket HTML file and serve as downloadable attachment
-    with open(ticket_path, 'rb') as ticket_file:
-        response = HttpResponse(ticket_file.read(), content_type='text/html')
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        # content
+        ticket_content = [
+            header_text,
+            Spacer(1, 12),
+            Paragraph(f"<b>Reservation ID:</b> {reservation.id}", styles['Normal']),
+            Spacer(1, 12),
+            Paragraph(f"<b>User:</b> {reservation.user}", styles['Normal']),
+            Spacer(1, 12),
+            Paragraph(f"<b>Parking Spot:</b> {reservation.parking_spot}", styles['Normal']),
+            Spacer(1, 12),
+            Paragraph(f"<b>Start Time:</b> {reservation.start_time}", styles['Normal']),
+            Spacer(1, 12),
+            Paragraph(f"<b>End Time:</b> {reservation.end_time}", styles['Normal']),
+            Spacer(1, 12),
+            contacts_text,
+            Spacer(1, 12),
+            footer_text
+        ]
 
-    # Remove temporary ticket file
-    os.remove(ticket_path)
+        # building pdf
+        doc.build(ticket_content)
 
-    return response
+        return response
+    except Exception as e:
+        return HttpResponseServerError("Failed to generate ticket. Please try again later.")
+
+

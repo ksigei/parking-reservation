@@ -12,3 +12,7 @@ urlpatterns = [
     path('notification/', include('notification.urls')),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+admin.site.site_header = 'Parking Admin'
+admin.site.site_title = 'Parking Admin'
+admin.site.index_title = 'Welcome to Parking Admin'
